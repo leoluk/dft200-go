@@ -24,13 +24,13 @@ const (
 )
 
 func checksum(b []byte) uint8 {
-	var total uint32
+        var total uint8
 
-	for _, n := range b {
-		total += uint32(n)
-	}
+        for _, n := range b {
+                total += n
+        }
 
-	return uint8(total & 0xFF)
+        return total
 }
 
 func main() {
