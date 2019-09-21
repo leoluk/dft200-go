@@ -28,11 +28,11 @@ const (
 )
 
 func checksum(b []byte) uint8 {
-        var total uint8
+	var total uint8
 
-        for _, n := range b {
-                total += n
-        }
+	for _, n := range b {
+		total += n
+	}
 
 	return total
 }
