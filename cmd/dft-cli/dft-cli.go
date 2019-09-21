@@ -4,8 +4,12 @@ import (
 	"bytes"
 	"encoding/binary"
 	"flag"
+	"fmt"
 	"github.com/muka/go-bluetooth/api"
 	log "github.com/sirupsen/logrus"
+	"io"
+	"os"
+	"time"
 )
 
 const (
@@ -30,7 +34,14 @@ func checksum(b []byte) uint8 {
                 total += n
         }
 
-        return total
+	return total
+}
+
+func logToFile(w io.Writer, msg string) {
+	timestamp := time.Now().Format(time.RFC1123)
+	if _, err := fmt.Fprintf(w, "%s\t%s\n", timestamp, msg); err != nil {
+		panic(err)
+	}
 }
 
 func main() {
@@ -39,6 +50,7 @@ func main() {
 	stop := flag.Bool("stop", false, "Stop treadmill")
 	pause := flag.Bool("pause", false, "Pause treadmill")
 	speed := flag.Uint("speed", 0, "Set treadmill speed")
+	logfile := flag.String("logfile", "", "Log actions to logfile")
 
 	flag.Parse()
 
@@ -60,6 +72,14 @@ func main() {
 
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	var l *os.File
+	if *logfile != "" {
+		l, err = os.OpenFile(*logfile, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0777)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	rxChar, err := dev.GetCharByUUID(rxCharUUID)
@@ -88,12 +108,24 @@ func main() {
 	switch {
 	case *start:
 		cmd = COMMAND_START
+		if l != nil {
+			logToFile(l, "start")
+		}
 	case *stop:
 		cmd = COMMAND_STOP
+		if l != nil {
+			logToFile(l, "stop")
+		}
 	case *speed != 0:
 		cmd = COMMAND_SET_SPEED
+		if l != nil {
+			logToFile(l, fmt.Sprintf("speed=%d", *speed))
+		}
 	case *pause:
 		cmd = COMMAND_PAUSE
+		if l != nil {
+			logToFile(l, "pause")
+		}
 	default:
 		log.Fatal("No command specified")
 	}
