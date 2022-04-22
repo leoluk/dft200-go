@@ -5,11 +5,12 @@ import (
 	"encoding/binary"
 	"flag"
 	"fmt"
-	"github.com/muka/go-bluetooth/api"
-	log "github.com/sirupsen/logrus"
 	"io"
 	"os"
 	"time"
+
+	"github.com/muka/go-bluetooth/api"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -60,7 +61,7 @@ func main() {
 
 	dev, err := api.GetDeviceByAddress(*addr)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to get device: %s", err)
 	}
 
 	log.Infof("device (dev): %v", dev)
@@ -71,7 +72,7 @@ func main() {
 	}
 
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to connect to device: %s", err)
 	}
 
 	var l *os.File
@@ -84,17 +85,17 @@ func main() {
 
 	rxChar, err := dev.GetCharByUUID(rxCharUUID)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to get rxChar: %s", err)
 	}
 
 	txChar, err := dev.GetCharByUUID(txCharUUID)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to get txChar: %s", err)
 	}
 
 	err = rxChar.StartNotify()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to start notify: %s", err)
 	}
 
 	payload := []byte("\xf0\xc3\x03")
@@ -159,7 +160,7 @@ func main() {
 
 	err = txChar.WriteValue(buffer.Bytes(), nil)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to write value: %s", err)
 	}
 
 	log.Infof("Wrote payload %02x", buffer.Bytes())
