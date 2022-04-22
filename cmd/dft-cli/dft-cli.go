@@ -59,20 +59,28 @@ func main() {
 		log.Fatal("-addr is required")
 	}
 
-	dev, err := api.GetDeviceByAddress(*addr)
+	adapter, err := api.GetDefaultAdapter()
+	if err != nil {
+		log.Fatalf("Failed to get default adapter: %s", err)
+	}
+
+	dev, err := adapter.GetDeviceByAddress(*addr)
 	if err != nil {
 		log.Fatalf("Failed to get device: %s", err)
 	}
 
 	log.Infof("device (dev): %v", dev)
 
-	if !dev.IsConnected() {
+	ok, err := dev.GetConnected()
+	if err != nil {
+		log.Fatalf("Failed to get connection state: %s", err)
+	}
+	if !ok {
 		log.Infof("Connecting to device")
 		err = dev.Connect()
-	}
-
-	if err != nil {
-		log.Fatalf("Failed to connect to device: %s", err)
+		if err != nil {
+			log.Fatalf("Failed to connect to device: %s", err)
+		}
 	}
 
 	var l *os.File
